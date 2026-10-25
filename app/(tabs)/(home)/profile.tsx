@@ -71,7 +71,18 @@ export default function Profile() {
     setNameInput("");
   }
 
-  async function handleGenerateReport() {
+  function handleGenerateReport() {
+    Alert.alert(
+      "Send data to Google Gemini?",
+      "To write this report, the person's first name, their check-in averages and recent notes will be sent to Google's Gemini AI. Avoid putting sensitive details like full names or addresses in notes.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Send and generate", onPress: generateAndSaveReport },
+      ],
+    );
+  }
+
+  async function generateAndSaveReport() {
     if (!selectedPerson) {
       alert("Please select a person first.");
       return;

@@ -3,10 +3,14 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -106,144 +110,152 @@ export default function MainView() {
       </SafeAreaView>
     );
   }
-
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.mainView}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            onPress={() => router.navigate("/settings")}
-            accessibilityLabel="Settings"
-            hitSlop={10}
-          >
-            <Ionicons name="settings-outline" size={35} color="#ffffff" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.navigate("/profile")}
-            accessibilityLabel="Profile"
-            hitSlop={10}
-          >
-            <Ionicons name="person-circle-outline" size={35} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.dateText}>
-          Checking in for {selectedPerson.name}
-        </Text>
-
-        <View style={styles.bar} />
-
-        <View style={styles.reportButtons}>
-          {REPORTS.map((report) => (
-            <TouchableOpacity
-              key={report}
-              style={[
-                styles.button,
-                reportIsComplete(report) && styles.completedButton,
-                activeReport === report && styles.activeButton,
-              ]}
-              onPress={() => setActiveReport(report)}
-            >
-              <Text style={styles.buttonText}>{report}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.reportContainer}>
-          <Text style={styles.activeReportItem}>
-            {activeReport ?? "Select a category"}
-          </Text>
-
-          <View style={styles.reportBar} />
-
-          <View style={styles.faceRow}>
-            {FACES.map((face, index) => (
+      <KeyboardAvoidingView
+        style={styles.keyboardArea}
+        behavior={Platform.OS === "ios" ? "position" : undefined}
+        contentContainerStyle={styles.keyboardArea}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View style={styles.mainView}>
+            <View style={styles.headerRow}>
               <TouchableOpacity
-                key={index}
-                style={styles.faceButton}
-                onPress={() => {
-                  if (activeReport === null) {
-                    alert("Please select a category first.");
-                    return;
-                  }
-
-                  setSelectedFaces((currentFaces) => ({
-                    ...currentFaces,
-                    [activeReport]: index,
-                  }));
-                }}
+                onPress={() => router.navigate("/settings")}
+                accessibilityLabel="Settings"
+                hitSlop={10}
               >
-                <Image
-                  source={face}
-                  style={[
-                    styles.faceImage,
-                    activeReport !== null &&
-                      selectedFaces[activeReport] === index &&
-                      styles.selectedFace,
-                  ]}
+                <Ionicons name="settings-outline" size={35} color="#ffffff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => router.navigate("/profile")}
+                accessibilityLabel="Profile"
+                hitSlop={10}
+              >
+                <Ionicons
+                  name="person-circle-outline"
+                  size={35}
+                  color="#ffffff"
                 />
               </TouchableOpacity>
-            ))}
+            </View>
+
+            <Text style={styles.dateText}>
+              Checking in for {selectedPerson.name}
+            </Text>
+
+            <View style={styles.bar} />
+
+            <View style={styles.reportButtons}>
+              {REPORTS.map((report) => (
+                <TouchableOpacity
+                  key={report}
+                  style={[
+                    styles.button,
+                    reportIsComplete(report) && styles.completedButton,
+                    activeReport === report && styles.activeButton,
+                  ]}
+                  onPress={() => setActiveReport(report)}
+                >
+                  <Text style={styles.buttonText}>{report}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.reportContainer}>
+              <Text style={styles.activeReportItem}>
+                {activeReport ?? "Select a category"}
+              </Text>
+
+              <View style={styles.reportBar} />
+
+              <View style={styles.faceRow}>
+                {FACES.map((face, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.faceButton}
+                    onPress={() => {
+                      if (activeReport === null) {
+                        alert("Please select a category first.");
+                        return;
+                      }
+
+                      setSelectedFaces((currentFaces) => ({
+                        ...currentFaces,
+                        [activeReport]: index,
+                      }));
+                    }}
+                  >
+                    <Image
+                      source={face}
+                      style={[
+                        styles.faceImage,
+                        activeReport !== null &&
+                          selectedFaces[activeReport] === index &&
+                          styles.selectedFace,
+                      ]}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.notesContainer}>
+              <Text style={styles.notesLabel}>
+                Notes for {activeReport ?? "selected category"}:
+              </Text>
+
+              <TextInput
+                style={styles.notesInput}
+                placeholder="Enter your notes here..."
+                placeholderTextColor="#d9cdea"
+                multiline
+                returnKeyType="done"
+                submitBehavior="blurAndSubmit"
+                editable={activeReport !== null}
+                value={activeReport !== null ? notes[activeReport] : ""}
+                onChangeText={(text) => {
+                  if (activeReport === null) return;
+
+                  setNotes((currentNotes) => ({
+                    ...currentNotes,
+                    [activeReport]: text,
+                  }));
+                }}
+              />
+            </View>
+
+            <View style={styles.submitReport}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  !allReportsComplete && styles.disabledSubmitButton,
+                ]}
+                onPress={submitDailyReport}
+                disabled={!allReportsComplete}
+              >
+                <Text style={styles.submitButtonText}>
+                  {allReportsComplete
+                    ? "Submit Check-In"
+                    : `${completedCount}/4 Completed`}
+                </Text>
+              </TouchableOpacity>
+
+              {!allReportsComplete ? (
+                <Text style={styles.helpText}>
+                  Choose one face in every category to submit.
+                </Text>
+              ) : null}
+            </View>
           </View>
-        </View>
-
-        <View style={styles.notesContainer}>
-          <Text style={styles.notesLabel}>
-            Notes for {activeReport ?? "selected category"}:
-          </Text>
-
-          <TextInput
-            style={styles.notesInput}
-            placeholder="Enter your notes here..."
-            placeholderTextColor="#d9cdea"
-            multiline
-            editable={activeReport !== null}
-            value={activeReport !== null ? notes[activeReport] : ""}
-            onChangeText={(text) => {
-              if (activeReport === null) return;
-
-              setNotes((currentNotes) => ({
-                ...currentNotes,
-                [activeReport]: text,
-              }));
-            }}
-          />
-        </View>
-
-        <View style={styles.submitReport}>
-          <TouchableOpacity
-            style={[
-              styles.submitButton,
-              !allReportsComplete && styles.disabledSubmitButton,
-            ]}
-            onPress={submitDailyReport}
-            disabled={!allReportsComplete}
-          >
-            <Text style={styles.submitButtonText}>
-              {allReportsComplete
-                ? "Submit Check-In"
-                : `${completedCount}/4 Completed`}
-            </Text>
-          </TouchableOpacity>
-
-          {!allReportsComplete ? (
-            <Text style={styles.helpText}>
-              Choose one face in every category to submit.
-            </Text>
-          ) : null}
-        </View>
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#6d3fa9",
-  },
-
   mainView: {
     flex: 1,
     width: "100%",
@@ -435,5 +447,15 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 14,
     marginTop: 10,
+  },
+
+  container: {
+    flex: 1,
+    backgroundColor: "#6d3fa9",
+  },
+
+  keyboardArea: {
+    flex: 1,
+    width: "100%",
   },
 });
