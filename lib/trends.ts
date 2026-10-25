@@ -29,12 +29,11 @@ const RANGE_PHRASES: Record<TrendRange, string> = {
   year: "over the last year",
 };
 
-/** One point on the chart. score is null when there were no check-ins in that period. */
 export type ChartPoint = {
   key: string;
   label: string;
   score: number | null;
-  showLabel: boolean; // long ranges only label some points so they don't overlap
+  showLabel: boolean;
 };
 
 export type TrendData = {
@@ -64,8 +63,6 @@ const MONTHS = [
   "Dec",
 ];
 
-// How much the later part of a range must differ from the earlier part
-// before we call it a change rather than "steady".
 const TREND_THRESHOLD = 0.3;
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -75,7 +72,6 @@ function average(nums: number[]): number | null {
   return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
-/** Noon, n days ago. Noon avoids daylight-saving edge cases. */
 function daysAgo(n: number): Date {
   const d = new Date();
   d.setHours(12, 0, 0, 0);
@@ -83,7 +79,6 @@ function daysAgo(n: number): Date {
   return d;
 }
 
-/** Average score (1–5) for each date, for one person and one category (or all of them). */
 function dailyScores(
   checkups: Checkup[],
   personId: string,
@@ -105,7 +100,6 @@ function dailyScores(
   return result;
 }
 
-/** Average of the daily scores on the given dates, or null if none of them had a check-in. */
 function averageOver(daily: Map<string, number>, dates: Date[]): number | null {
   const scores = dates
     .map((d) => daily.get(getLocalDateKey(d)))
@@ -114,14 +108,6 @@ function averageOver(daily: Map<string, number>, dates: Date[]): number | null {
   return avg === null ? null : round1(avg);
 }
 
-/**
- * Builds the chart points for a range:
- *   week     → 7 daily points
- *   month    → 30 daily points
- *   3months  → 13 weekly averages
- *   year     → 12 monthly averages
- * "day" returns no points; use todayScores() for that view.
- */
 export function buildTrend(
   checkups: Checkup[],
   personId: string,
@@ -231,7 +217,6 @@ export function summarizeTrend(points: ChartPoint[]): TrendSummary {
   return { count, average: avg, direction };
 }
 
-/** Plain-language sentence for a trend. The AI overview will replace this later. */
 export function describeTrend(
   s: TrendSummary,
   subject: string,
@@ -261,9 +246,9 @@ export function describeTrend(
 export function generateDemoCheckups(personId: string, days = 365): Checkup[] {
   const offsets: Record<ReportCategory, number> = {
     Memory: 0,
-    Speech: 0.3,
-    Mobility: -0.2,
-    Conversation: 0.2,
+    Speech: 0.7,
+    Mobility: -0.9,
+    Conversation: 0.6,
   };
   const result: Checkup[] = [];
 

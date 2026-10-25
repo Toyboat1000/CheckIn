@@ -44,7 +44,7 @@ export default function MainView() {
 
   const [activeReport, setActiveReport] = useState<Report | null>(null);
 
-  // These are drafts only. They are not saved until Submit Daily Report.
+  // drafts only... until saved
   const [selectedFaces, setSelectedFaces] = useState<
     Record<Report, number | null>
   >({
@@ -61,7 +61,6 @@ export default function MainView() {
     Conversation: "",
   });
 
-  // A category is complete as soon as it has a selected face.
   function reportIsComplete(report: Report) {
     return selectedFaces[report] !== null;
   }
@@ -84,7 +83,6 @@ export default function MainView() {
       return;
     }
 
-    // Nothing is saved until this point.
     REPORTS.forEach((report) => {
       addCheckup(report, selectedFaces[report]!, notes[report]);
     });

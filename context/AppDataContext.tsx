@@ -2,13 +2,27 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { generateDemoCheckups } from "../lib/trends";
-import type {
-  Checkup,
-  Person,
-  ReportCategory,
-  SavedReport,
-} from "../types/data";
+import type { Checkup, Person, ReportCategory } from "../types/data";
 import { getLocalDateKey } from "../utils/date";
+
+import type { ReportSummary } from "@/lib/report";
+
+export type ReportSections = {
+  summary: string;
+  areas: Record<ReportCategory, string>;
+  notesSummary: string;
+  changesToDiscuss: string[];
+  dataCompleteness: string;
+};
+
+export type SavedReport = {
+  id: string;
+  personId: string;
+  createdAt: string;
+  summary?: ReportSummary; // numbers used for the PDF table
+  sections?: ReportSections; // Gemini's paragraphs
+  text?: string; // only on older plain-text reports
+};
 
 type StoredData = {
   people: Person[];
@@ -30,7 +44,11 @@ type AppDataContextType = {
   loadDemoData: () => void;
   resetAllData: () => Promise<void>;
 
-  addReport: (personId: string, text: string) => SavedReport;
+  addReport: (
+    personId: string,
+    summary: ReportSummary,
+    sections: ReportSections,
+  ) => SavedReport;
   deleteReport: (reportId: string) => void;
 };
 
@@ -135,12 +153,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setCheckups([...otherPeople, ...generateDemoCheckups(selectedPersonId)]);
   }
 
-  function addReport(personId: string, text: string): SavedReport {
+  function addReport(
+    personId: string,
+    summary: ReportSummary,
+    sections: ReportSections,
+  ): SavedReport {
     const newReport: SavedReport = {
       id: makeId(),
       personId,
-      text,
       createdAt: new Date().toISOString(),
+      summary,
+      sections,
     };
 
     setReports((currentReports) => [newReport, ...currentReports]);

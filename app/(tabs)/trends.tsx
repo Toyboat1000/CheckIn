@@ -74,7 +74,6 @@ export default function Trends() {
     [checkups, personId],
   );
 
-  // Summary card text. Phase 2: replace summaryText with the AI-generated synopsis.
   let summaryText: string;
   let evidenceText: string;
 
@@ -201,7 +200,7 @@ export default function Trends() {
           This page shows patterns, not diagnoses.
         </Text>
 
-        {/* Dev builds only: fills a year of sample check-ins for this person (replaces theirs). */}
+        {/* Only present in the development builds. Saves a year of fake check ins */}
         {__DEV__ && selectedPerson && (
           <Pressable onPress={loadDemoData} style={styles.demoButton}>
             <Text style={styles.demoButtonText}>
@@ -213,8 +212,6 @@ export default function Trends() {
     </SafeAreaView>
   );
 }
-
-/* ---------------- Range picker with a sliding highlight ---------------- */
 
 const PICKER_PAD = 4;
 
@@ -237,7 +234,6 @@ function RangePicker({
     if (segment === 0) return;
     const target = index * segment;
 
-    // First layout: jump into place. After that: glide to the tapped option.
     if (!placed.current) {
       slide.setValue(target);
       placed.current = true;
@@ -286,14 +282,11 @@ function RangePicker({
   );
 }
 
-/* ---------------- Line chart that always fits the card ---------------- */
-
 const CHART_HEIGHT = 220;
 const PAD = { left: 34, right: 18, top: 16, bottom: 40 };
 const GRID_SCORES = [5, 4, 3, 2, 1];
 
 function LineChart({ title, points }: { title: string; points: ChartPoint[] }) {
-  // Measure the card's real width, so the chart can never be wider than the screen.
   const [width, setWidth] = useState(0);
 
   const dense = points.length > 14;
@@ -311,7 +304,6 @@ function LineChart({ title, points }: { title: string; points: ChartPoint[] }) {
       ? (PAD.left + plotRight) / 2
       : PAD.left + (i * (plotRight - PAD.left)) / (points.length - 1);
 
-  // Lift the "pen" across empty periods so gaps stay visible.
   let path = "";
   let penUp = true;
   points.forEach((p, i) => {
@@ -420,8 +412,6 @@ function LineChart({ title, points }: { title: string; points: ChartPoint[] }) {
   );
 }
 
-/* ---------------- Bars for the 1D view ---------------- */
-
 function TodayBars({
   scores,
   highlight,
@@ -495,7 +485,6 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 
-  // Range picker
   rangeRow: {
     width: "90%",
     flexDirection: "row",
@@ -618,7 +607,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  // Graph card
   graphCard: {
     width: "90%",
     backgroundColor: "#ffffff",
@@ -658,7 +646,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // 1D bars
   barsWrap: {
     width: "100%",
     paddingHorizontal: 8,

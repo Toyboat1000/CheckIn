@@ -1,6 +1,8 @@
 import { useAppData } from "@/context/AppDataContext";
 import { generateReport } from "@/lib/ai";
+import { sharePdf } from "@/lib/pdf";
 import { buildReportSummary } from "@/lib/report";
+import { buildReportHtml, reportToPlainText } from "@/lib/reportHtml";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -47,8 +49,17 @@ export default function Profile() {
     personReports[0] ??
     null;
 
+  const openReportText =
+    openReport && selectedPerson
+      ? reportToPlainText(openReport, selectedPerson.name)
+      : "";
+
+  // Older reports were saved as plain text and have no data for the PDF table
+  const canMakePdf = Boolean(openReport?.sections && openReport?.summary);
+
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   function handleAddPerson() {
     if (!nameInput.trim()) {
@@ -78,8 +89,8 @@ export default function Profile() {
 
     try {
       const summary = buildReportSummary(checkups, selectedPerson);
-      const text = await generateReport(summary);
-      const saved = addReport(selectedPerson.id, text);
+      const sections = await generateReport(summary);
+      const saved = addReport(selectedPerson.id, summary, sections);
       setOpenReportId(saved.id);
     } catch (error) {
       setReportError(
@@ -90,10 +101,30 @@ export default function Profile() {
     }
   }
 
-  async function handleSendReport() {
-    if (!openReport) return;
+  async function handleSharePdf() {
+    if (!openReport?.sections || !openReport.summary) return;
+
+    setPdfLoading(true);
     try {
-      await Share.share({ message: openReport.text });
+      const html = buildReportHtml(
+        openReport.summary,
+        openReport.sections,
+        openReport.createdAt,
+      );
+      await sharePdf(html);
+    } catch (error) {
+      alert(
+        error instanceof Error ? error.message : "Could not create the PDF.",
+      );
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
+  async function handleSendText() {
+    if (!openReportText) return;
+    try {
+      await Share.share({ message: openReportText });
     } catch (error) {
       alert("Could not open the share menu.");
     }
@@ -201,11 +232,24 @@ export default function Profile() {
 
             <View style={styles.reportCard}>
               <Text style={styles.reportText} selectable>
-                {openReport.text}
+                {openReportText}
               </Text>
             </View>
 
-            <TouchableOpacity onPress={handleSendReport}>
+            {canMakePdf ? (
+              <TouchableOpacity onPress={handleSharePdf} disabled={pdfLoading}>
+                <Text style={styles.buttonText}>
+                  {pdfLoading ? "Making PDF…" : "Share as PDF"}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.disclosure}>
+                This older report can only be sent as text. Generate a new
+                report to get a PDF.
+              </Text>
+            )}
+
+            <TouchableOpacity onPress={handleSendText}>
               <Text style={styles.buttonText}>Send as text</Text>
             </TouchableOpacity>
 

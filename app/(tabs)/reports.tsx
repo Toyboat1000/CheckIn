@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAppData } from "../../context/AppDataContext";
 import type { Checkup } from "../../types/data";
+import { formatDay } from "../../utils/date";
 
 const FACES = [
   require("../../assets/faces/very-sad.png"),
@@ -82,7 +83,9 @@ export default function Reports() {
                   activeOpacity={0.7}
                 >
                   <View>
-                    <Text style={styles.checkupText}>Report for {date}</Text>
+                    <Text style={styles.checkupText}>
+                      Report for {formatDay(date)}
+                    </Text>
                     <Text style={styles.checkupNotes}>
                       {dateCheckups.length} category check-in(s)
                     </Text>
