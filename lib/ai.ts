@@ -126,7 +126,7 @@ export async function generateReport(
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: "user", parts: [{ text: JSON.stringify(summary) }] }],
       generationConfig: {
-        maxOutputTokens: 600,
+        maxOutputTokens: 3500,
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA,
       },

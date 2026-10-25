@@ -50,6 +50,7 @@ type AppDataContextType = {
     sections: ReportSections,
   ) => SavedReport;
   deleteReport: (reportId: string) => void;
+  deleteCheckupsForDate: (personId: string, reportDate: string) => void;
 };
 
 const STORAGE_KEY = "wellness-checkin-data";
@@ -176,6 +177,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  function deleteCheckupsForDate(personId: string, reportDate: string) {
+    setCheckups((currentCheckups) =>
+      currentCheckups.filter(
+        (checkup) =>
+          !(checkup.personId === personId && checkup.reportDate === reportDate),
+      ),
+    );
+  }
+
   async function resetAllData() {
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
@@ -204,6 +214,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         reports,
         addReport,
         deleteReport,
+        deleteCheckupsForDate,
       }}
     >
       {children}

@@ -1,6 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
 import {
+  Alert,
   Image,
   LayoutAnimation,
   ScrollView,
@@ -24,7 +25,8 @@ const FACES = [
 ];
 
 export default function Reports() {
-  const { people, selectedPersonId, checkups } = useAppData();
+  const { people, selectedPersonId, checkups, deleteCheckupsForDate } =
+    useAppData();
 
   const [openDate, setOpenDate] = useState<string | null>(null);
 
@@ -55,6 +57,29 @@ export default function Reports() {
   function toggleDate(date: string) {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setOpenDate((current) => (current === date ? null : date));
+  }
+
+  function handleDeleteDate(date: string) {
+    if (!selectedPerson) return;
+
+    Alert.alert(
+      "Delete this check-in?",
+      `This permanently deletes ${selectedPerson.name}'s check-in for ${formatDay(date)}. It will also be removed from Trends and future reports.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            LayoutAnimation.configureNext(
+              LayoutAnimation.Presets.easeInEaseOut,
+            );
+            deleteCheckupsForDate(selectedPerson.id, date);
+            setOpenDate(null);
+          },
+        },
+      ],
+    );
   }
 
   return (
@@ -118,6 +143,22 @@ export default function Reports() {
                         ) : null}
                       </View>
                     ))}
+
+                    <View style={styles.deleteRow}>
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleDeleteDate(date)}
+                        accessibilityLabel={`Delete check-in for ${formatDay(date)}`}
+                        hitSlop={8}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={16}
+                          color="#c62828"
+                        />
+                        <Text style={styles.deleteText}>Delete this day</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 )}
               </View>
@@ -231,5 +272,24 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     color: "#555555",
+  },
+
+  deleteRow: {
+    borderTopWidth: 1,
+    borderTopColor: "#dddddd",
+    paddingTop: 12,
+    alignItems: "center",
+  },
+
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+
+  deleteText: {
+    color: "#c62828",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

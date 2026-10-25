@@ -1,9 +1,9 @@
 import {
-    CATEGORIES,
-    TrendRange,
-    TrendSummary,
-    buildTrend,
-    summarizeTrend,
+  CATEGORIES,
+  TrendRange,
+  TrendSummary,
+  buildTrend,
+  summarizeTrend,
 } from "@/lib/trends";
 import type { Checkup, Person, ReportCategory } from "@/types/data";
 

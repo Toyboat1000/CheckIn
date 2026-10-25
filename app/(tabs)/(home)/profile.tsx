@@ -3,6 +3,8 @@ import { generateReport } from "@/lib/ai";
 import { sharePdf } from "@/lib/pdf";
 import { buildReportSummary } from "@/lib/report";
 import { buildReportHtml, reportToPlainText } from "@/lib/reportHtml";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -34,16 +36,16 @@ export default function Profile() {
     (person) => person.id === selectedPersonId,
   );
 
+  const router = useRouter();
+
   const [nameInput, setNameInput] = useState("");
 
   const [openReportId, setOpenReportId] = useState<string | null>(null);
 
-  // This person's saved reports, newest first
   const personReports = reports
     .filter((r) => r.personId === selectedPersonId)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  // The report on screen: the one tapped, otherwise the newest
   const openReport =
     personReports.find((r) => r.id === openReportId) ??
     personReports[0] ??
@@ -54,7 +56,6 @@ export default function Profile() {
       ? reportToPlainText(openReport, selectedPerson.name)
       : "";
 
-  // Older reports were saved as plain text and have no data for the PDF table
   const canMakePdf = Boolean(openReport?.sections && openReport?.summary);
 
   const [reportLoading, setReportLoading] = useState(false);
@@ -155,6 +156,23 @@ export default function Profile() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => router.navigate("/settings")}
+            accessibilityLabel="Settings"
+            hitSlop={10}
+          >
+            <Ionicons name="settings-outline" size={35} color="#ffffff" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.navigate("/")}
+            accessibilityLabel="Home"
+            hitSlop={10}
+          >
+            <Ionicons name="home-outline" size={35} color="#ffffff" />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.topText}>Profile</Text>
         <View style={styles.bar} />
 
@@ -294,10 +312,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#6d3fa9",
   },
+
   content: {
     alignItems: "center",
     paddingBottom: 120,
   },
+
+  headerRow: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 260,
+    zIndex: 10,
+  },
+
   topText: {
     fontSize: 24,
     color: "#fff",

@@ -1,7 +1,8 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -12,9 +13,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAppData } from "../../../context/AppDataContext";
 import type { ReportCategory } from "../../../types/data";
-
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useRouter } from "expo-router";
 
 const FACES = [
   require("../../../assets/faces/very-sad.png"),
@@ -31,9 +29,23 @@ const REPORTS: ReportCategory[] = [
   "Conversation",
 ];
 
-export default function MainView() {
-  type Report = ReportCategory;
+type Report = ReportCategory;
 
+const EMPTY_FACES: Record<Report, number | null> = {
+  Memory: null,
+  Speech: null,
+  Mobility: null,
+  Conversation: null,
+};
+
+const EMPTY_NOTES: Record<Report, string> = {
+  Memory: "",
+  Speech: "",
+  Mobility: "",
+  Conversation: "",
+};
+
+export default function MainView() {
   const { people, selectedPersonId, addCheckup, isLoading } = useAppData();
 
   const router = useRouter();
@@ -45,21 +57,8 @@ export default function MainView() {
   const [activeReport, setActiveReport] = useState<Report | null>(null);
 
   // drafts only... until saved
-  const [selectedFaces, setSelectedFaces] = useState<
-    Record<Report, number | null>
-  >({
-    Memory: null,
-    Speech: null,
-    Mobility: null,
-    Conversation: null,
-  });
-
-  const [notes, setNotes] = useState<Record<Report, string>>({
-    Memory: "",
-    Speech: "",
-    Mobility: "",
-    Conversation: "",
-  });
+  const [selectedFaces, setSelectedFaces] = useState(EMPTY_FACES);
+  const [notes, setNotes] = useState(EMPTY_NOTES);
 
   function reportIsComplete(report: Report) {
     return selectedFaces[report] !== null;
@@ -70,7 +69,7 @@ export default function MainView() {
 
   function submitDailyReport() {
     if (!selectedPerson) {
-      alert("Please add and select a person in Settings first.");
+      alert("Please add and select a person in Profile first.");
       return;
     }
 
@@ -90,20 +89,8 @@ export default function MainView() {
     alert("Report Saved Successfully!");
 
     setActiveReport(null);
-
-    setSelectedFaces({
-      Memory: null,
-      Speech: null,
-      Mobility: null,
-      Conversation: null,
-    });
-
-    setNotes({
-      Memory: "",
-      Speech: "",
-      Mobility: "",
-      Conversation: "",
-    });
+    setSelectedFaces(EMPTY_FACES);
+    setNotes(EMPTY_NOTES);
   }
 
   useEffect(() => {
@@ -122,10 +109,10 @@ export default function MainView() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.mainView}>
+      <View style={styles.mainView}>
         <View style={styles.headerRow}>
           <TouchableOpacity
-            onPress={() => router.push("/settings")}
+            onPress={() => router.navigate("/settings")}
             accessibilityLabel="Settings"
             hitSlop={10}
           >
@@ -133,17 +120,16 @@ export default function MainView() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.push("/profile")}
+            onPress={() => router.navigate("/profile")}
             accessibilityLabel="Profile"
             hitSlop={10}
           >
             <Ionicons name="person-circle-outline" size={35} color="#ffffff" />
           </TouchableOpacity>
         </View>
+
         <Text style={styles.dateText}>
-          {selectedPerson
-            ? `Checking in for ${selectedPerson.name}`
-            : "No person selected"}
+          Checking in for {selectedPerson.name}
         </Text>
 
         <View style={styles.bar} />
@@ -247,7 +233,7 @@ export default function MainView() {
             </Text>
           ) : null}
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -259,7 +245,8 @@ const styles = StyleSheet.create({
   },
 
   mainView: {
-    flexGrow: 1,
+    flex: 1,
+    width: "100%",
     alignItems: "center",
     paddingBottom: 110,
   },
@@ -289,12 +276,6 @@ const styles = StyleSheet.create({
     height: 1.5,
     backgroundColor: "#ffffff",
     borderRadius: 1,
-  },
-
-  progressText: {
-    color: "#ffffff",
-    fontSize: 16,
-    marginTop: 18,
   },
 
   reportButtons: {
@@ -454,15 +435,5 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 14,
     marginTop: 10,
-  },
-
-  settingsIcon: {
-    position: "absolute",
-    left: 130,
-  },
-
-  profileIcon: {
-    position: "absolute",
-    right: 130,
   },
 });
