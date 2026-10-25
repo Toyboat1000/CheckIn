@@ -86,7 +86,7 @@ export default function MainView() {
       addCheckup(report, selectedFaces[report]!, notes[report]);
     });
 
-    alert("Report Saved Successfully!");
+    alert("Check-in submitted successfully!");
 
     setActiveReport(null);
     setSelectedFaces(EMPTY_FACES);

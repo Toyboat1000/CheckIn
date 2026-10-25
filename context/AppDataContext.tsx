@@ -145,7 +145,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     console.log("Saved checkup:", newCheckup);
 
-    setCheckups((currentCheckups) => [...currentCheckups, newCheckup]);
+    setCheckups((currentCheckups) => [
+      ...currentCheckups.filter(
+        (checkup) =>
+          !(
+            checkup.personId === newCheckup.personId &&
+            checkup.category === newCheckup.category &&
+            checkup.reportDate === newCheckup.reportDate
+          ),
+      ),
+      newCheckup,
+    ]);
   }
 
   function loadDemoData() {
